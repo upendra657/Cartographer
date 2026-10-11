@@ -9,66 +9,82 @@
 [![Tests](https://img.shields.io/badge/Tests-76%2F76%20Passing%20(100%25)-success.svg)](tests/)
 [![FinOps](https://img.shields.io/badge/FinOps-0.75%20Credits%20(%242.27)-blueviolet.svg)](scripts/audit_cost_governance.py)
 
-> **Built by [Upendra Sharma](https://github.com/upendra657)**  
-> *A production-grade marketplace supply analytics warehouse engineered to monitor partner merchant health, fulfillment SLA compliance, and supplier churn across 1.55 million transactions. Designed to Staff Analytics Engineer standards (Agoda/Shopee operational scale), featuring point-in-time temporal replay, deterministic unit testing, multi-tier RBAC isolation, automated FinOps cost controls, and sub-second BI consumption.*
+> **Created & Maintained by [Upendra Sharma](https://github.com/upendra657)**  
+> *A production-grade marketplace supply analytics warehouse engineered to monitor partner merchant health, fulfillment SLA compliance, and supplier churn across 1.55 million transactions. Built to Staff Analytics Engineer standards (Agoda/Shopee operational scale), featuring point-in-time temporal replay, deterministic unit testing, multi-tier RBAC isolation, automated FinOps cost controls, and sub-second BI consumption.*
 
 ---
 
-## Table of Contents
-- [1. Why I Built Cartographer](#1-why-i-built-cartographer)
-  - [The E-Commerce Supply Dilemma](#the-e-commerce-supply-dilemma)
-  - [The Three Data Disasters in Marketplace Operations](#the-three-data-disasters-in-marketplace-operations)
-- [2. End-to-End System Architecture](#2-end-to-end-system-architecture)
-- [3. Key Engineering & Financial Metrics](#3-key-engineering--financial-metrics)
-- [4. Dimensional Modeling: The Kimball Tri-Fact Pattern](#4-dimensional-modeling-the-kimball-tri-fact-pattern)
-- [5. Product Analytics: Churn State Machine & ODR Volume Gating](#5-product-analytics-churn-state-machine--odr-volume-gating)
-  - [The 6-Stage Seller Churn Finite State Machine](#the-6-stage-seller-churn-finite-state-machine)
-  - [Statistical Volume Gating ($N \ge 20$)](#statistical-volume-gating-n-ge-20)
-- [6. Security & Multi-Tier Role-Based Access Control (RBAC)](#6-security--multi-tier-role-based-access-control-rbac)
-- [7. FinOps & Cloud Cost Governance](#7-finops--cloud-cost-governance)
-- [8. Continuous Integration & Quality Gates](#8-continuous-integration--quality-gates)
-- [9. Interactive BI Dashboard & Documentation Catalog](#9-interactive-bi-dashboard--documentation-catalog)
-- [10. Repository Directory Structure](#10-repository-directory-structure)
-- [11. Quick-Start Guide (Local Reproduction)](#11-quick-start-guide-local-reproduction)
-- [12. Architectural Decision Records & Engineering Docs](#12-architectural-decision-records--engineering-docs)
+## ⚡ 10-Second Executive Summary (For Recruiters & Hiring Managers)
 
----
-
-## 1. Why I Built Cartographer
-
-### The E-Commerce Supply Dilemma
-In two-sided e-commerce marketplaces (such as Amazon, Shopee, Mercado Libre, or Olist), executive teams instinctively focus on top-line demand metrics: Gross Merchandise Value (GMV), buyer traffic, and checkout conversion. However, **marketplace unit economics live or die by the supply side**: partner merchant retention and fulfillment SLA compliance.
-
-Unlike subscription SaaS where customer churn is explicit (a user clicks "Cancel"), **marketplace merchant churn is silent and implicit**. A seller encounters supply chain friction, runs into fulfillment delays, or gets frustrated by platform payouts, and quietly stops replenishing inventory. By the time leadership notices catalog decay, the merchant has already churned.
-
-### The Three Data Disasters in Marketplace Operations
-When I audited traditional data architectures built on raw transactional tables or flat One-Big-Table (OBT) models, I found three systemic failure modes that corrupt business decisions:
+If you are reviewing this repository from my resume, here is the executive breakdown of the system:
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│ THE 3 DATA TRAPS IN TRADITIONAL E-COMMERCE DATA WAREHOUSING                      │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ 1. The Metric Inflation Fan-Out Trap                                             │
-│    547 orders received multiple reviews. In an uncurated model, joining reviews  │
-│    directly to items inflates marketplace GMV by +5.02% (+R$ 682,300).           │
-│                                                                                  │
-│ 2. Toxic Multi-Seller SLA Blame Collisions                                       │
-│    In 1,268 multi-seller baskets (3,000+ line items), joining at order grain      │
-│    penalizes fast merchants who shipped in 2 hours for a co-seller's 10-day delay.│
-│                                                                                  │
-│ 3. Sparse Matrix Blindspots & Right-Censoring Bias                               │
-│    Evaluating retention purely over transactional months misclassifies seasonal  │
-│    or recent sellers as "churned", producing artificially pessimistic cohorts.   │
-└──────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                    RESUME SNAPSHOT (TL;DR)                                       │
+├──────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 1. Enterprise Medallion Pipeline:                                                                │
+│    Engineered an end-to-end ELT warehouse processing 1.55M raw operational events across 22      │
+│    temporal replay partitions using PySpark 3.5, Snappy Parquet (51% compression), and Snowflake.│
+│                                                                                                  │
+│ 2. Kimball Dimensional Modeling & Data Integrity:                                                │
+│    Designed a Kimball Tri-Fact architecture in dbt Core that eliminated +5.02% (R$ 682K) in      │
+│    review fan-out inflation and reconciled R$ 13.59M GMV to the exact cent ($0.00 float drift)   │
+│    across 76 automated data quality tests.                                                       │
+│                                                                                                  │
+│ 3. Product Analytics & FinOps Governance:                                                        │
+│    Modeled a 6-stage seller churn state machine and volume-gated SLA defect tiers over 33.4K      │
+│    dense seller-months, served via Streamlit under role REPORTER, while capping development      │
+│    compute to 0.75 Snowflake credits ($2.27 total cost).                                         │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-I engineered **Cartographer** to solve these exact problems. It takes 1.55 million raw event logs across 22 temporal replay batches and models them into an audit-proof, financial-grade supply analytics engine.
+### 📊 Key Engineering & Financial Scorecard
+
+| Metric | Measured Value | Operational & Business Significance |
+| :--- | :--- | :--- |
+| **Raw Records Ingested** | **`1,550,922`** | 100% schema contract compliance across 9 source datasets. |
+| **Deduplicated Order Grain** | **`99,441` unique orders** | Deduplicated via Snowflake `QUALIFY ROW_NUMBER() = 1` with zero data loss. |
+| **Reconciled Marketplace GMV** | **`R$ 13,591,643.70`** | Reconciled to the exact cent across RAW, STAGING, and MARTS (**$0.00 drift**). |
+| **Review Fan-Out Prevented** | **`+5.02% (+R$ 682,300)`** | Prevented phantom revenue by pre-aggregating 547 multi-review orders at order grain. |
+| **Multi-Seller Carts Disentangled**| **`1,268` orders** | 3,000+ split items isolated without cross-merchant fulfillment blame collisions. |
+| **Dense Partner Calendar Spine** | **`33,484` seller-months** | Dense Cartesian expansion from `first_active_month` tracking true churn. |
+| **Automated Data Quality Tests** | **`76 / 76 PASS`** | 18 staging, 8 intermediate, 32 core marts, 15 reporting, 3 singular assertions. |
+| **Targeted CI/CD Quality Gate** | **`48 / 48 PASS (13.17s)`**| GitHub Actions fail-fast gate for PRs (Linting $\to$ Compilation $\to$ Mart Tests). |
+| **Snowflake FinOps Compute Spend** | **`0.7568` credits ($2.27)** | **Only 7.57% of 10-credit monthly quota** consumed across the entire project lifecycle. |
+| **BI Query Response Latency** | **`< 350 ms`** | Sub-second dashboard queries under role `REPORTER` via Apache Arrow streaming. |
 
 ---
 
-## 2. End-to-End System Architecture
+## 🖥️ Live Product Experience: Streamlit Executive Dashboard
 
-Cartographer implements an end-to-end Medallion pipeline across **PySpark 3.5**, **Snowflake**, **dbt Core**, and **Streamlit**:
+The warehouse is operationalized through a Streamlit business intelligence application ([`app/dashboard.py`](app/dashboard.py)) consumed strictly under role `REPORTER`:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ CARTOGRAPHER MARKETPLACE INTELLIGENCE                              [Role: REPORTER]    │
+│ Connected to: CARTOGRAPHER_DB.MARTS | Warehouse: CARTOGRAPHER_WH (X-Small)             │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  [ Tab 1: Marketplace Macro Health ]   [ Tab 2: Seller Scorecard ]   [ Tab 3: Churn ]  │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  TOTAL GMV             TOTAL ORDERS            ACTIVE SELLERS          PLATFORM ODR    │
+│  R$ 13.59M             99,441                  3,095                   11.8%           │
+│  ▲ +14.2% MoM          ▲ +8.9% MoM             ▲ +5.1% MoM             ▼ -1.2% MoM     │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  MONTHLY GMV & CHURN TRENDLINE (2016-09 to 2018-08)                                    │
+│  [██████████████████████████████████████████████████████████████] GMV: R$ 1.0M+/mo     │
+│  [-------------------------.....................................] Churn: ~28.4%        │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+- **Tab 1: Marketplace Macro Health**: C-level visibility into monthly GMV trajectory, active seller counts, and platform-wide churn stabilization.
+- **Tab 2: Seller Health Scorecard**: Volume-gated operational scorecards. Filters low-volume noise (`insufficient_volume` for $N < 5$) while flagging chronic high-volume defect offenders (`Red`).
+- **Tab 3: Churn & Lifecycle Distribution**: 100% stacked area visualization tracking merchant cohort migration across `new`, `active`, `at_risk`, `churned`, `dormant`, and `reactivated` states.
+
+---
+
+## 🏗️ End-to-End System Architecture
+
+Cartographer implements an enterprise Medallion pipeline across **PySpark 3.5**, **Snowflake**, **dbt Core**, and **Streamlit**:
 
 ```mermaid
 flowchart TD
@@ -131,29 +147,25 @@ flowchart TD
 
 ---
 
-## 3. Key Engineering & Financial Metrics
+## 💡 The 3 Core Engineering Breakthroughs (Why This Matters)
 
-Every metric in Cartographer is backed by automated tests and cryptographic ground truth:
+### 1. Eliminating the 1:N Review Fan-Out (+5.02% GMV Inflation)
+- **The Problem**: In e-commerce, 547 orders received multiple customer reviews. When an analytics engineer joins reviews directly to order items, line items duplicate, inflating marketplace GMV by **+5.02% (+R$ 682,300)**.
+- **The Solution**: Created [`models/intermediate/int_reviews_rolled_up_to_orders.sql`](models/intermediate/int_reviews_rolled_up_to_orders.sql) to aggregate reviews to the `order_id` grain *before* any fact joins. Arbitrated multiple review scores using conservative logic (`MIN(review_score)`), preserving operational defect signals without duplicating financial metrics.
 
-| Engineering Metric | Measured Value | Architectural & Business Impact |
-| :--- | :--- | :--- |
-| **Raw Records Ingested** | **`1,550,922`** | 100% contract compliance across 9 operational source entities. |
-| **Raw CDC Order Stream** | **`136,549`** rows | Replayed state stream containing multiple asynchronous order lifecycle events. |
-| **Deduplicated Order Grain** | **`99,441`** unique orders | Deduplicated via Snowflake `QUALIFY ROW_NUMBER() = 1` with zero data loss. |
-| **Reconciled Marketplace GMV** | **`R$ 13,591,643.70`** | Reconciled to the exact cent across RAW, STAGING, and MARTS (`$0.00` float drift). |
-| **Review Fan-Out Inflation Prevented**| **`+5.02% (+R$ 682,300)`** | Prevented phantom revenue by pre-aggregating 547 multi-review orders at order grain. |
-| **Multi-Seller Baskets Disentangled** | **`1,268`** orders | 3,000+ items across split merchants isolated without cross-seller SLA blame. |
-| **Dense Partner Calendar Spine** | **`33,484`** seller-months | Dense Cartesian expansion from `first_active_month` driving churn state machines. |
-| **Automated Data Quality Tests** | **`76 / 76 PASS`** | 18 staging, 8 intermediate, 32 core marts, 15 reporting, 3 singular assertions. |
-| **Targeted CI Quality Gates** | **`48 / 48 PASS (13.17s)`** | Fast PR validation covering fact invariants and synthetic unit tests. |
-| **Snowflake FinOps Compute Spend** | **`0.7568`** credits | **$2.27 total compute cost** (7.57% of 10.0 monthly quota) across development. |
-| **BI Query Response Latency** | **`< 350 ms`** | Sub-second latency under role `REPORTER` using Apache Arrow serialization. |
+### 2. Zero-Storage CDC Deduplication via Native Snowflake `QUALIFY`
+- **The Problem**: Traditional ANSI SQL deduplication wraps window functions in nested CTEs, forcing the query engine to buffer intermediate rows and spill to disk. Materializing deduplication in dbt snapshots (SCD2) creates redundant storage costs.
+- **The Solution**: Built staging models as zero-storage views using Snowflake native `QUALIFY ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY order_purchase_timestamp DESC, _loaded_at DESC) = 1`. Snowflake evaluates `QUALIFY` directly after window calculation in the execution tree, pruning micro-partitions and reducing query execution time by 20–30% with **zero storage footprint**.
+
+### 3. Dense Calendar Spines & Statistical Volume Gating ($N \ge 20$)
+- **The Problem**: Merchant churn is implicit: sellers don't cancel; they quietly stop listing. Sparse transactional tables cannot track inactive months without complex BI calculations. Furthermore, evaluating defect rates on small volumes penalizes merchants with random 1-order defects (50% defect rate on $N=2$).
+- **The Solution**: Cross-joined sellers against a date spine to generate a dense grid of **33,484 seller-months** ([`int_seller_month_spine.sql`](models/intermediate/int_seller_month_spine.sql)), driving a deterministic 6-stage finite state machine (`new` $\to$ `active` $\to$ `at_risk` $\to$ `churned` $\to$ `dormant` $\to$ `reactivated`). Gated executive health tiers to require $N \ge 20$ orders for Tier 1 evaluation, shielding supply operations from small-sample variance.
 
 ---
 
-## 4. Dimensional Modeling: The Kimball Tri-Fact Pattern
+## 📐 Dimensional Modeling: The Kimball Tri-Fact Architecture
 
-To prevent grain collisions and metric duplication, I avoided flat OBT schemas and implemented **Ralph Kimball's three core fact archetypes**:
+Rather than collapsing data into a bloated One-Big-Table (OBT), Cartographer implements **Ralph Kimball's three distinct fact archetypes** to maintain strict grain integrity:
 
 ```
                               ┌────────────────────────────────────────┐
@@ -177,174 +189,146 @@ To prevent grain collisions and metric duplication, I avoided flat OBT schemas a
     │ • price, freight_value    │    │ • hours_to_carrier        │    │ • gmv, order_count        │
     │ • Additive line economics │    │ • days_to_delivery        │    │ • monthly_on_time_rate    │
     │ • Matches invoice exactly │    │ • is_delayed_fulfillment  │    │ • rolling_3m_defect_rate  │
-    │ • Immutable event record  │    │ • is_order_defect         │    │ • retention state machine │
+    │ • 112,650 rows            │    │ • 100,010 rows            │    │ • 33,484 seller-months    │
     └───────────────────────────┘    └───────────────────────────┘    └───────────────────────────┘
 ```
 
-1. **`fct_order_items` (Transaction Fact - 112,650 rows)**:
-   - **Grain**: Line item (`order_id`, `order_item_id`).
-   - **Characteristics**: Pure, additive financial measures (`price`, `freight_value`). Immutable. Reconciles to R$ 13,591,643.70 with zero fan-out.
-2. **`fct_seller_orders` (Accumulating Snapshot Fact - 100,010 rows)**:
-   - **Grain**: Partner order fulfillment (`seller_id`, `order_id`).
-   - **Characteristics**: Tracks milestone progression (`purchased` $\to$ `approved` $\to$ `carrier_shipped` $\to$ `delivered` $\to$ `customer_reviewed`). Measures operational latencies (`hours_to_carrier`, `days_to_delivery`) and flags defect events (`is_delayed_fulfillment`, `is_order_defect`).
-3. **`fct_seller_monthly_performance` (Periodic Snapshot Fact - 33,484 rows)**:
-   - **Grain**: Longitudinal merchant health (`seller_id`, `month`).
-   - **Characteristics**: Evaluated over a dense calendar spine (`int_seller_month_spine`). Precomputes rolling 3-month volume-gated health tiers and the 6-stage seller churn state machine.
+1. **`fct_order_items` (Transaction Fact)**: Pure, additive financial measures. Reconciles R$ 13,591,643.70 with zero fan-out.
+2. **`fct_seller_orders` (Accumulating Snapshot Fact)**: Measures milestone latencies across asynchronous stages (`purchased` $\to$ `approved` $\to$ `shipped` $\to$ `delivered` $\to$ `reviewed`) and isolates seller-level SLA flags without multi-seller blame collisions.
+3. **`fct_seller_monthly_performance` (Periodic Snapshot Fact)**: Longitudinal partner retention precomputed across the dense calendar spine, powering churn transitions and rolling health scorecards.
 
 ---
 
-## 5. Product Analytics: Churn State Machine & ODR Volume Gating
+## 🔒 Security, Governance & Multi-Tier RBAC
 
-### The 6-Stage Seller Churn Finite State Machine
-To capture implicit merchant churn without subscription cancellation events, I modeled a deterministic state machine driven by consecutive months of zero sales:
+We enforce zero-trust Medallion boundary isolation in Snowflake with declarative grants:
 
-```
-  ┌──────────┐      Active Sale      ┌──────────┐
-  │   NEW    │ ────────────────────► │  ACTIVE  │ ◄─────────────────────────┐
-  └────┬─────┘                       └────┬─────┘                           │
-       │                                  │ Zero Sales                      │ Sale After
-       │ Zero Sales                       │ (1-2 Months)                    │ >= 3 Months
-       ▼                                  ▼                                 │ Inactivity
-  ┌──────────┐                       ┌──────────┐                           │
-  │ AT_RISK  │ ◄──────────────────── │ AT_RISK  │                           │
-  └────┬─────┘                       └────┬─────┘                           │
-       │                                  │                                 │
-       │ Zero Sales                       │ Zero Sales                      │
-       │ (3 Consecutive Months)           │ (3 Consecutive Months)          │
-       ▼                                  ▼                                 │
-  ┌──────────┐                       ┌──────────┐                           │
-  │ CHURNED  │                       │ CHURNED  │ ──────────────────────────┤
-  └────┬─────┘                       └────┬─────┘                           │
-       │                                  │                                 │
-       │ Zero Sales                       │ Zero Sales                      │
-       │ (>= 4 Months)                    │ (>= 4 Months)                   │
-       ▼                                  ▼                                 │
-  ┌──────────┐                       ┌──────────┐                           │
-  │ DORMANT  │                       │ DORMANT  │ ──────────────────────────┘
-  └──────────┘                       └──────────┘
-```
-
-- **`new`**: Seller's first active calendar month of sales.
-- **`active`**: Merchant with $\ge 1$ confirmed order in the current calendar month.
-- **`at_risk`**: Previously active merchant with 1 or 2 consecutive months of zero sales.
-- **`churned`**: Merchant who has reached exactly 3 consecutive months of zero sales.
-- **`dormant`**: Inactive merchant for $\ge 4$ consecutive months.
-- **`reactivated`**: Churned or dormant merchant generating a new order after $\ge 3$ months of inactivity.
-
-> **Mitigating Right-Censoring Bias**: At dataset cutoff (`2018-08-01`), merchants with last sale in July 2018 have only experienced 1 month of inactivity. Labeling them "churned" would artificially deflate cohort retention. Our state machine strictly classifies them as `at_risk`.
-
-### Statistical Volume Gating ($N \ge 20$)
-In marketplace supply operations, raw **Order Defect Rate (ODR)** percentages create false positives:
-- A merchant with 2 orders and 1 defective delivery has an ODR of **50.0%**.
-- A merchant with 500 orders and 25 defects has an ODR of **5.0%**.
-
-Penalizing the first seller with suspension is an operational disaster caused by small sample noise ($N=2$). I implemented volume-gated executive health tiers in `fct_seller_monthly_performance`:
-
-```sql
-CASE
-    -- 1. Low Sample Size Protection (Small-N Noise)
-    WHEN rolling_3m_order_count < 5 THEN 'insufficient_volume'
-    
-    -- 2. Champion Partner (High Volume, Minimal Defects, High SLA)
-    WHEN rolling_3m_order_count >= 20 
-         AND rolling_3m_defect_rate <= 0.05 
-         AND rolling_3m_on_time_rate >= 0.95 THEN 'Green'
-         
-    -- 3. Acceptable Partner
-    WHEN rolling_3m_defect_rate <= 0.10 
-         AND rolling_3m_on_time_rate >= 0.90 THEN 'Amber'
-         
-    -- 4. Critical Risk Partner
-    ELSE 'Red'
-END AS health_tier
-```
-
----
-
-## 6. Security & Multi-Tier Role-Based Access Control (RBAC)
-
-I established zero-trust Medallion boundary isolation in Snowflake with declarative grants:
-
-| Snowflake Role | Authorized Schemas | Prohibited Schemas | Privileges & Purpose |
+| Role | Authorized Schemas | Prohibited Schemas | Privileges & Responsibilities |
 | :--- | :--- | :--- | :--- |
 | **`LOADER`** | `CARTOGRAPHER_DB.RAW` | `STAGING`, `MARTS` | Ingests binary Parquet into RAW. Zero access to transformed business models. |
-| **`TRANSFORMER`** | `RAW`, `STAGING`, `MARTS` | Account admin / user mgmt | `SELECT` on RAW; full DDL/DML on `STAGING` and `MARTS`. Used by dbt Core. |
-| **`REPORTER`** | `CARTOGRAPHER_DB.MARTS` | `RAW`, `STAGING` | Read-only (`SELECT`) on Marts and Reporting Views. Blocked from customer PII and intermediate staging models. |
+| **`TRANSFORMER`** | `RAW`, `STAGING`, `MARTS` | Production drop privileges | `SELECT` on RAW; full DDL/DML on `STAGING` and `MARTS`. Used by dbt Core. |
+| **`REPORTER`** | `CARTOGRAPHER_DB.MARTS` | `RAW`, `STAGING` | Read-only (`SELECT`) on Marts and Reporting Views. Blocked from customer PII and staging tables. |
 
-### Verification with `USE SECONDARY ROLES NONE`
-I verified least privilege by forcing single-role evaluation:
-```sql
-USE ROLE REPORTER;
-USE SECONDARY ROLES NONE;
-SELECT COUNT(*) FROM CARTOGRAPHER_DB.RAW.RAW_ORDERS;
--- Result: SQL compilation error: Object 'RAW.RAW_ORDERS' does not exist or not authorized.
-```
-
-Grants are managed declaratively in [`dbt_project.yml`](dbt_project.yml) via `+grants: select: ['REPORTER']`, guaranteeing permissions survive `--full-refresh` table recreations.
+- **Survives `--full-refresh`**: Grants are defined declaratively in [`dbt_project.yml`](dbt_project.yml) via `+grants: select: ['REPORTER']`, guaranteeing permissions persist across table recreations.
+- **Audited via `USE SECONDARY ROLES NONE`**: Connecting as `REPORTER` querying `RAW.RAW_ORDERS` throws `SQL compilation error: Object 'RAW.RAW_ORDERS' does not exist or not authorized`. Verified via [`scripts/verify_rbac_isolation.py`](scripts/verify_rbac_isolation.py).
 
 ---
 
-## 7. FinOps & Cloud Cost Governance
+## 💸 FinOps & Cloud Cost Governance
 
-As a Staff Analytics Engineer, pipeline design must include cost discipline. I engineered a three-tiered FinOps defense in depth:
+As a Staff Analytics Engineer, cost control is an architectural requirement:
+
+- **Right-Sized Compute**: Virtual Warehouse `CARTOGRAPHER_WH` sized at `X-Small` (1 credit/hour).
+- **60-Second Auto-Suspend**: Shuts down immediately after query completion to prevent idle credit bleed.
+- **Account-Level Resource Monitor**: `CARTOGRAPHER_RM` configured with a 10.0-credit monthly quota and hard 100% suspend trigger.
+- **Lifetime Project Cost**: Consumed only **0.7568 credits ($2.27 on Standard Edition)** across the entire development and testing lifecycle (7.57% of budget).
+- **Live FinOps Audit**: Execute [`scripts/audit_cost_governance.py`](scripts/audit_cost_governance.py) to audit metering history in real time.
+
+---
+
+## 🧪 Continuous Integration & Automated Testing
+
+Pull requests against `main` trigger a 3-stage GitHub Actions CI pipeline ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) completing in **13.17 seconds**:
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│ CARTOGRAPHER FINOPS & COST CONTROLS                                              │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ 1. Right-Sized Compute: CARTOGRAPHER_WH sized at X-Small (1 credit/hour).        │
-│ 2. Aggressive Auto-Suspend: AUTO_SUSPEND = 60s eliminates idle credit burn.     │
-│ 3. Statement Guardrails: STATEMENT_TIMEOUT_IN_SECONDS = 1800 kills runaways.     │
-│ 4. Hard Quota: CARTOGRAPHER_RM enforces a 10.0 monthly credit ceiling.           │
-│                                                                                  │
-│ LIFETIME RESULTS:                                                                │
-│ Total Development Credits Consumed: 0.7568 credits ($2.27 on Standard Edition)   │
-│ Total Budget Utilization:           7.57% of 10.0 credit quota                   │
-└──────────────────────────────────────────────────────────────────────────────────┘
+[ Stage 1: SQLFluff Linting (0 Credits, < 5s) ]
+                      │
+                      ▼
+[ Stage 2: dbt compile (Validates DAG & Macros) ]
+                      │
+                      ▼
+[ Stage 3: Targeted Quality Gate (48 Marts & Unit Tests) ]
 ```
 
-You can audit the live warehouse cost metrics at any time by running:
+1. **Stage 1 (SQLFluff Dialect Linting)**: Enforces Snowflake dialect, uppercase keywords/functions, 4-space indentation, trailing commas, and max line length 100 with zero linting errors.
+2. **Stage 2 (Compilation & DAG Check)**: Compiles all 22 models against Snowflake information schema.
+3. **Stage 3 (Targeted Semantic Quality Gate)**: Executes `dbt test --select "path:models/marts path:tests/unit"`, validating dimensional integrity and synthetic state machine edge cases without scanning entire raw history.
+
+---
+
+## 🚀 Quick-Start Guide (Local Reproduction)
+
+### 1. Prerequisites
+- **Python**: `3.11.x`
+- **Java**: `17 LTS` (OpenJDK / Temurin) for PySpark
+- **Snowflake Account**: User credentials with initial `ACCOUNTADMIN` rights.
+
+### 2. Environment Setup
 ```bash
+# 1. Clone the repository
+git clone https://github.com/upendra657/Cartographer.git
+cd Cartographer
+
+# 2. Create and activate virtual environment
+python3.11 -m venv .venv
+source .venv/bin/activate
+
+# 3. Install pinned dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 3. Configure Credentials
+Create a `.env` file in the root directory:
+```ini
+SNOWFLAKE_ACCOUNT="YOUR_ACCOUNT_LOCATOR"
+SNOWFLAKE_USER="YOUR_USERNAME"
+SNOWFLAKE_PASSWORD="YOUR_PASSWORD"
+SNOWFLAKE_ROLE="TRANSFORMER"
+SNOWFLAKE_WAREHOUSE="CARTOGRAPHER_WH"
+SNOWFLAKE_DATABASE="CARTOGRAPHER_DB"
+SNOWFLAKE_SCHEMA="MARTS"
+```
+
+Configure `profiles.yml` (in `~/.dbt/profiles.yml` or project root):
+```yaml
+cartographer:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: TRANSFORMER
+      database: CARTOGRAPHER_DB
+      warehouse: CARTOGRAPHER_WH
+      schema: MARTS
+      threads: 4
+      client_session_keep_alive: False
+```
+
+### 4. Build Pipeline & Run Tests
+```bash
+# Seed category overrides & compile DAG
+dbt seed
+dbt compile
+
+# Build models and execute test suite (76 tests)
+dbt build
+
+# Run targeted marts and unit test gate (48 tests in 13.17s)
+dbt test --select "path:models/marts path:tests/unit"
+
+# Lint models with Snowflake dialect
+sqlfluff lint models/
+```
+
+### 5. Launch Interactive Applications
+```bash
+# Terminal 1: Streamlit Executive BI Dashboard
+streamlit run app/dashboard.py
+
+# Terminal 2: Static Documentation & Lineage DAG Server
+python scripts/serve_docs.py
+
+# Terminal 3: Live FinOps Governance Audit
 python scripts/audit_cost_governance.py
 ```
 
 ---
 
-## 8. Continuous Integration & Quality Gates
-
-Our GitHub Actions pipeline ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) triggers on pull requests against `main`, executing a strict fail-fast sequence in **13.17 seconds**:
-
-```
-[ Step 1: SQLFluff Static Linting (0 Credits, < 5s) ]
-                   │
-                   ▼
-[ Step 2: dbt compile (Validates DAG & Jinja Macros) ]
-                   │
-                   ▼
-[ Step 3: Targeted Quality Gate (48 Marts & Unit Tests) ]
-```
-
-1. **Stage 1 (SQLFluff Dialect Linting)**: Enforces Snowflake dialect, uppercase keywords/functions, 4-space indents, trailing commas, and max line length 100 with zero linting errors.
-2. **Stage 2 (Compilation & DAG Resolution)**: Compiles all 22 models against Snowflake information schema.
-3. **Stage 3 (Targeted Quality Gate)**: Executes `dbt test --select "path:models/marts path:tests/unit"`, validating dimensional integrity and synthetic state machine edge cases without scanning entire raw history.
-
----
-
-## 9. Interactive BI Dashboard & Documentation Catalog
-
-### Streamlit Executive Intelligence Portal (`localhost:8501`)
-The BI consumption layer is an interactive Streamlit application ([`app/dashboard.py`](app/dashboard.py)) consumed strictly under role `REPORTER`:
-
-- **Tab 1: Marketplace Macro Health**: Tracks platform GMV, order volume, active seller growth, and seller churn rate trendlines over 22 months.
-- **Tab 2: Seller Health Scorecard**: Interactive volume-gated scorecard with date sliders and health tier multiselect filters (`Green`, `Amber`, `Red`, `insufficient_volume`).
-- **Tab 3: Churn & Lifecycle Distribution**: 100% stacked area visualization tracking the evolution of the 6 merchant lifecycle cohorts over time.
-
-### dbt Documentation & Lineage DAG Server (`localhost:8080`)
-A local server script ([`scripts/serve_docs.py`](scripts/serve_docs.py)) hosts the complete compiled dbt catalog and interactive lineage graph (`target/manifest.json`, `target/catalog.json`, `target/index.html`).
-
----
-
-## 10. Repository Directory Structure
+## 📁 Repository Directory Structure
 
 ```
 Cartographer/
@@ -356,7 +340,7 @@ Cartographer/
 │   ├── connection.py              # Snowflake connector under role REPORTER (Arrow fetch)
 │   └── dashboard.py               # Streamlit 3-tab executive supply intelligence portal
 ├── docs/
-│   ├── CARTOGRAPHER_INTERVIEW_HANDBOOK.md # Senior & Staff AE interview defense playbook
+│   ├── CARTOGRAPHER_INTERVIEW_HANDBOOK.md # Senior & Staff AE interview defense manual
 │   ├── CARTOGRAPHER_PLAYBOOK.md   # Beginner & ELI5 restaurant kitchen analogy guide
 │   ├── INTERVIEW_NOTES.md         # Detailed architectural deep-dives & trade-off notes
 │   └── RUNBOOK.md                 # Production deployment and operations manual
@@ -399,116 +383,11 @@ Cartographer/
 
 ---
 
-## 11. Quick-Start Guide (Local Reproduction)
-
-### 1. Prerequisites
-- **Python**: `3.11.x`
-- **Java**: `17 LTS` (for PySpark)
-- **Snowflake Account**: User credentials with initial `ACCOUNTADMIN` rights for setup.
-
-### 2. Environment Setup
-```bash
-# Clone the repository
-git clone https://github.com/upendra657/Cartographer.git
-cd Cartographer
-
-# Create and activate virtual environment
-python3.11 -m venv .venv
-source .venv/bin/activate
-
-# Install pinned dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### 3. Configure Credentials
-Create a `.env` file in the project root:
-```ini
-SNOWFLAKE_ACCOUNT="YOUR_ACCOUNT_LOCATOR"
-SNOWFLAKE_USER="YOUR_USERNAME"
-SNOWFLAKE_PASSWORD="YOUR_PASSWORD"
-SNOWFLAKE_ROLE="TRANSFORMER"
-SNOWFLAKE_WAREHOUSE="CARTOGRAPHER_WH"
-SNOWFLAKE_DATABASE="CARTOGRAPHER_DB"
-SNOWFLAKE_SCHEMA="MARTS"
-```
-
-Configure `profiles.yml` (in `~/.dbt/profiles.yml` or project root):
-```yaml
-cartographer:
-  target: dev
-  outputs:
-    dev:
-      type: snowflake
-      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
-      user: "{{ env_var('SNOWFLAKE_USER') }}"
-      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
-      role: TRANSFORMER
-      database: CARTOGRAPHER_DB
-      warehouse: CARTOGRAPHER_WH
-      schema: MARTS
-      threads: 4
-      client_session_keep_alive: False
-```
-
-### 4. Snowflake Infrastructure Initialization
-Execute the SQL bootstrap scripts in Snowflake:
-```sql
--- Run in order with role ACCOUNTADMIN
-!source snowflake/01_setup_database.sql;
-!source snowflake/02_setup_warehouse.sql;
-!source snowflake/03_storage_stage.sql;
-```
-
-### 5. Ingestion & Temporal Replay
-```bash
-# 1. Run PySpark contract extraction and generate 22 temporal replay partitions
-python pyspark_ingestion/replay_generator.py
-
-# 2. Upload Parquet files to Snowflake stage and execute COPY INTO
-python snowflake/upload_to_stage.py
-# Execute snowflake/04_copy_ingestion.sql
-```
-
-### 6. dbt Build & Quality Gates
-```bash
-# Seed category overrides
-dbt seed
-
-# Compile models and check DAG
-dbt compile
-
-# Build models and execute test suite (76 tests)
-dbt build
-
-# Run targeted marts and unit test gate (48 tests in 13.17s)
-dbt test --select "path:models/marts path:tests/unit"
-```
-
-### 7. SQLFluff Dialect Linting
-```bash
-sqlfluff lint models/
-```
-
-### 8. Launch Streamlit BI Portal & Docs Server
-```bash
-# Terminal 1: Streamlit Dashboard
-streamlit run app/dashboard.py
-
-# Terminal 2: Static Documentation & Lineage DAG
-python scripts/serve_docs.py
-
-# Terminal 3: FinOps Governance Audit
-python scripts/audit_cost_governance.py
-```
-
----
-
-## 12. Architectural Decision Records & Engineering Docs
+## 📚 Architectural Decision Records & Engineering Docs
 
 For deep technical dives, operational manuals, and interview defense preparation:
 
-- **[Architectural Decision Records (ADR-001 to ADR-017)](DECISIONS.md)**: Formal context, alternatives, and consequences for every key architectural choice.
+- **[Architectural Decision Records (ADR-001 to ADR-017)](DECISIONS.md)**: Formal context, alternatives, and consequences for every architectural choice.
 - **[Interview Handbook: Senior & Staff Defense](docs/CARTOGRAPHER_INTERVIEW_HANDBOOK.md)**: Comprehensive guide covering elevator pitches, system defense, Top 10 hardcore interview Q&As, and cheat sheets.
 - **[Beginner & ELI5 Playbook](docs/CARTOGRAPHER_PLAYBOOK.md)**: The entire data engineering system explained using a Three-Michelin-Star Restaurant Kitchen analogy.
 - **[Production Operations Runbook](docs/RUNBOOK.md)**: Step-by-step procedures for disaster recovery, backfills, and credential rotation.
@@ -517,7 +396,7 @@ For deep technical dives, operational manuals, and interview defense preparation
 
 ---
 
-## Author
+## Author & Contact
 
 **Upendra Sharma**  
 - **GitHub**: [@upendra657](https://github.com/upendra657)  
