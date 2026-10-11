@@ -366,9 +366,9 @@ cd Cartographer
 python3.11 -m venv .venv
 source .venv/bin/activate
 
-# 3. Install pinned dependencies
+# 3. Install dependencies (app runtime + pipeline development)
 pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 ### 3. Configure Credentials
@@ -481,7 +481,8 @@ Cartographer/
 ├── DECISIONS.md                   # 17 Architectural Decision Records (ADR-001 to ADR-017)
 ├── FAILURE_MODES.md               # 9 cataloged failure modes with detection and recovery
 ├── dbt_project.yml                # Project configuration, materializations, and declarative grants
-└── requirements.txt               # Pinned production dependencies
+├── requirements.txt               # Pinned web runtime dependencies (Streamlit Cloud)
+└── requirements-dev.txt           # Data engineering, dbt, PySpark, and linting tools
 ```
 
 ---

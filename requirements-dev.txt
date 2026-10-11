@@ -1,0 +1,9 @@
+# Data Engineering & Orchestration
+pyspark==3.5.1
+dbt-core==1.7.14
+dbt-snowflake==1.7.3
+
+# Testing & Quality
+pytest==8.1.1
+sqlfluff>=3.0.0
+sqlfluff-templater-dbt>=3.0.0
