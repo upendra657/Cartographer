@@ -1,0 +1,35 @@
+name: 'cartographer'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'cartographer'
+
+# Path configurations for Cartographer transformation models and tests
+model-paths: ["dbt/models", "models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests", "dbt/tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros", "dbt/macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Model materialization hierarchy (ADR-007, Step 2.1)
+# Staging and intermediate layers materialized as views; marts materialized as tables
+models:
+  cartographer:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +schema: marts
+      +grants:
+        select: ['REPORTER']
+      core:
+        +materialized: table
+      reporting:
+        +materialized: view

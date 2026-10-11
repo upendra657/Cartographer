@@ -1,35 +1,49 @@
-# Source data: Olist CSVs (~120 MB; one file exceeds GitHub's 50 MB warning limit). Never committed.
+# ==============================================================================
+# Cartographer Gitignore Policy
+# ==============================================================================
+
+# Data & Datasets (Raw data and Parquet extracts)
 Datasets/
 data/
-
-# Generated Parquet output
 *.parquet
+*.csv
+!seeds/*.csv
 
-# Python
+# Secrets, Credentials & Local Config
+.env
+.env.*
+profiles.yml
+*.pem
+*.key
+.user.yml
+
+# Python, Virtual Environments & Caches
 .venv/
 venv/
+env/
 __pycache__/
 *.py[cod]
+*$py.class
 .pytest_cache/
+.coverage
+htmlcov/
 
-# Spark local artifacts
-spark-warehouse/
-metastore_db/
-derby.log
-
-# dbt artifacts
-dbt/target/
-dbt/dbt_packages/
-dbt/logs/
+# dbt Artifacts & Logs
+target/
+dbt_packages/
 logs/
 
-# Credentials: profiles stay outside the repo; CI writes its own at runtime
-profiles.yml
-.env
-*.p8
-*.pem
-
-# OS / IDE
+# IDE, OS & Editor Temp Files
 .DS_Store
+Thumbs.db
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+
+# Internal Agent Framework & Session Recovery
+AGENTS.md
+GEMINI.md
+Resume context.md
+OPERATING SYSTEM.md

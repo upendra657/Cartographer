@@ -1,0 +1,88 @@
+{
+  "reconciliation_metadata": {
+    "generated_at": "2026-10-09T12:00:00Z",
+    "phase": "Phase 1: PySpark ELT and Snowflake Ingestion",
+    "stage": "Part 1B: CSV -> Parquet Replay Engine",
+    "status": "PASSED",
+    "input_csv_size_mb": 122.0,
+    "output_parquet_size_mb": 60.0,
+    "parquet_file_count": 93,
+    "compression": "snappy",
+    "batch_partitions": 22
+  },
+  "tables": {
+    "olist_orders_dataset": {
+      "expected_rows": 99441,
+      "deduped_parquet_rows": 99441,
+      "drift_rows": 0,
+      "status": "PASSED"
+    },
+    "olist_order_items_dataset": {
+      "expected_rows": 112650,
+      "deduped_parquet_rows": 112650,
+      "drift_rows": 0,
+      "expected_sum_price": 13591643.70,
+      "actual_sum_price": 13591643.70,
+      "expected_sum_freight": 2251909.54,
+      "actual_sum_freight": 2251909.54,
+      "status": "PASSED"
+    },
+    "olist_order_reviews_dataset": {
+      "expected_rows": 99224,
+      "deduped_parquet_rows": 99224,
+      "drift_rows": 0,
+      "multiline_crlf_comments_preserved": 3852,
+      "status": "PASSED"
+    },
+    "olist_order_payments_dataset": {
+      "expected_rows": 103886,
+      "deduped_parquet_rows": 103886,
+      "drift_rows": 0,
+      "expected_sum_payment": 16008872.12,
+      "actual_sum_payment": 16008872.12,
+      "status": "PASSED"
+    },
+    "olist_customers_dataset": {
+      "expected_rows": 99441,
+      "deduped_parquet_rows": 99441,
+      "drift_rows": 0,
+      "status": "PASSED"
+    },
+    "olist_sellers_dataset": {
+      "expected_rows": 3095,
+      "deduped_parquet_rows": 3095,
+      "drift_rows": 0,
+      "status": "PASSED"
+    },
+    "olist_products_dataset": {
+      "expected_rows": 32951,
+      "deduped_parquet_rows": 32951,
+      "drift_rows": 0,
+      "status": "PASSED"
+    },
+    "product_category_name_translation": {
+      "expected_rows": 71,
+      "deduped_parquet_rows": 71,
+      "drift_rows": 0,
+      "bom_stripped": true,
+      "status": "PASSED"
+    },
+    "olist_geolocation_dataset": {
+      "expected_rows": 1000163,
+      "deduped_parquet_rows": 1000163,
+      "drift_rows": 0,
+      "status": "PASSED"
+    }
+  },
+  "totals": {
+    "total_expected_rows": 1550922,
+    "total_deduped_parquet_rows": 1550922,
+    "total_drift_rows": 0,
+    "financial_reconciliation": {
+      "sum_price": 13591643.70,
+      "sum_freight_value": 2251909.54,
+      "sum_payment_value": 16008872.12,
+      "drift_cents": 0.00
+    }
+  }
+}

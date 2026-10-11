@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "profiled_date": "2026-10-08",
+    "description": "Ground truth baseline profiled from raw Olist CSV source files (PROJECT_CONTEXT.md §6)",
+    "total_rows": 1550922
+  },
+  "tables": {
+    "olist_orders_dataset": {
+      "file_name": "olist_orders_dataset.csv",
+      "expected_row_count": 99441,
+      "natural_key": ["order_id"]
+    },
+    "olist_order_items_dataset": {
+      "file_name": "olist_order_items_dataset.csv",
+      "expected_row_count": 112650,
+      "natural_key": ["order_id", "order_item_id"],
+      "aggregations": {
+        "sum_price": 13591643.70,
+        "sum_freight_value": 2251909.54
+      }
+    },
+    "olist_order_reviews_dataset": {
+      "file_name": "olist_order_reviews_dataset.csv",
+      "expected_row_count": 99224,
+      "natural_key": ["review_id", "order_id"]
+    },
+    "olist_order_payments_dataset": {
+      "file_name": "olist_order_payments_dataset.csv",
+      "expected_row_count": 103886,
+      "natural_key": ["order_id", "payment_sequential"],
+      "aggregations": {
+        "sum_payment_value": 16008872.12
+      }
+    },
+    "olist_customers_dataset": {
+      "file_name": "olist_customers_dataset.csv",
+      "expected_row_count": 99441,
+      "natural_key": ["customer_id"]
+    },
+    "olist_sellers_dataset": {
+      "file_name": "olist_sellers_dataset.csv",
+      "expected_row_count": 3095,
+      "natural_key": ["seller_id"]
+    },
+    "olist_products_dataset": {
+      "file_name": "olist_products_dataset.csv",
+      "expected_row_count": 32951,
+      "natural_key": ["product_id"]
+    },
+    "product_category_name_translation": {
+      "file_name": "product_category_name_translation.csv",
+      "expected_row_count": 71,
+      "natural_key": ["product_category_name"]
+    },
+    "olist_geolocation_dataset": {
+      "file_name": "olist_geolocation_dataset.csv",
+      "expected_row_count": 1000163,
+      "natural_key": []
+    }
+  },
+  "reconciliation_totals": {
+    "sum_price": 13591643.70,
+    "sum_freight_value": 2251909.54,
+    "sum_payment_value": 16008872.12
+  }
+}

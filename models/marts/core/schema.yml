@@ -1,0 +1,127 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Daily calendar dimension spanning 2016-09-01 through 2018-12-31."
+    columns:
+      - name: date_key
+        description: "Surrogate primary key: MD5 hash of date_day."
+        tests:
+          - unique
+          - not_null
+      - name: date_day
+        description: "Calendar date."
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_sellers
+    description: "Conformed dimension for marketplace sellers with lifecycle tenure and location."
+    columns:
+      - name: seller_key
+        description: "Surrogate primary key: MD5 hash of seller_id."
+        tests:
+          - unique
+          - not_null
+      - name: seller_id
+        description: "Natural key: unique seller identifier."
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_products
+    description: "Conformed dimension for products with English category translations and physical specifications."
+    columns:
+      - name: product_key
+        description: "Surrogate primary key: MD5 hash of product_id."
+        tests:
+          - unique
+          - not_null
+      - name: product_id
+        description: "Natural key: unique product identifier."
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_customers
+    description: "Conformed dimension for distinct marketplace customers at customer_unique_id grain."
+    columns:
+      - name: customer_key
+        description: "Surrogate primary key: MD5 hash of customer_unique_id."
+        tests:
+          - unique
+          - not_null
+      - name: customer_unique_id
+        description: "Natural key: unique customer person identifier."
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_order_items
+    description: "Granular transaction fact table capturing line-item economics without join fan-out."
+    columns:
+      - name: order_item_key
+        description: "Surrogate primary key: MD5 hash of (order_id, order_item_id)."
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        description: "Degenerate dimension: order identifier."
+        tests:
+          - not_null
+      - name: order_item_id
+        description: "Order item sequence index."
+        tests:
+          - not_null
+      - name: seller_key
+        description: "Foreign key to dim_sellers."
+        tests:
+          - not_null
+      - name: product_key
+        description: "Foreign key to dim_products."
+        tests:
+          - not_null
+
+  - name: fct_seller_orders
+    description: "Accumulating snapshot fact table tracking seller-order fulfillment milestones, transit lags, and quality flags."
+    columns:
+      - name: seller_order_key
+        description: "Surrogate primary key: MD5 hash of (seller_id, order_id)."
+        tests:
+          - unique
+          - not_null
+      - name: seller_id
+        description: "Natural seller identifier."
+        tests:
+          - not_null
+      - name: order_id
+        description: "Natural order identifier."
+        tests:
+          - not_null
+
+  - name: fct_seller_monthly_performance
+    description: "Periodic snapshot fact table tracking monthly seller fulfillment SLA, defect rates, lifecycle status, and health tiers."
+    columns:
+      - name: seller_monthly_key
+        description: "Surrogate primary key: MD5 hash of (seller_id, month)."
+        tests:
+          - unique
+          - not_null
+      - name: seller_id
+        description: "Natural seller identifier."
+        tests:
+          - not_null
+      - name: month
+        description: "First day of calendar month."
+        tests:
+          - not_null
+      - name: seller_lifecycle_status
+        description: "Seller lifecycle status according to consecutive inactivity rules."
+        tests:
+          - accepted_values:
+              values: ['new', 'active', 'at_risk', 'churned', 'dormant', 'reactivated']
+      - name: health_tier
+        description: "Executive account health classification."
+        tests:
+          - accepted_values:
+              values: ['insufficient_volume', 'Green', 'Amber', 'Red']

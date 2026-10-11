@@ -1,0 +1,89 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: "Deduplicated staging model for orders, retaining the most recently extracted state per order_id."
+    columns:
+      - name: order_id
+        description: "Primary key: unique natural identifier for each order."
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_order_items
+    description: "Deduplicated staging model for order line items, retaining the most recently extracted state per (order_id, order_item_id)."
+    columns:
+      - name: order_id
+        description: "Composite key component: unique identifier for the parent order."
+        tests:
+          - not_null
+      - name: order_item_id
+        description: "Composite key component: sequential item number within the order."
+        tests:
+          - not_null
+
+  - name: stg_order_reviews
+    description: "Deduplicated staging model for customer order reviews, retaining the most recently extracted state per review_id."
+    columns:
+      - name: review_id
+        description: "Primary key: unique review identifier."
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_order_payments
+    description: "Deduplicated staging model for payment records, retaining the most recently extracted state per (order_id, payment_sequential)."
+    columns:
+      - name: order_id
+        description: "Composite key component: unique identifier for the order."
+        tests:
+          - not_null
+      - name: payment_sequential
+        description: "Composite key component: sequential payment method index."
+        tests:
+          - not_null
+
+  - name: stg_customers
+    description: "Deduplicated staging model for customers, retaining the most recently extracted state per customer_id."
+    columns:
+      - name: customer_id
+        description: "Primary key: unique per-order customer token."
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_sellers
+    description: "Deduplicated staging model for sellers, retaining the most recently extracted state per seller_id."
+    columns:
+      - name: seller_id
+        description: "Primary key: unique seller identifier."
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_products
+    description: "Deduplicated staging model for products, retaining the most recently extracted state per product_id."
+    columns:
+      - name: product_id
+        description: "Primary key: unique product identifier."
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_product_translations
+    description: "Deduplicated staging model for product category translations, retaining the most recently extracted state per product_category_name."
+    columns:
+      - name: product_category_name
+        description: "Primary key: Portuguese product category name."
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_geolocation
+    description: "Deduplicated staging model for geolocation coordinates, retaining the most recently extracted state per geolocation_zip_code_prefix."
+    columns:
+      - name: geolocation_zip_code_prefix
+        description: "Primary key: 5-digit postal code prefix."
+        tests:
+          - unique
+          - not_null

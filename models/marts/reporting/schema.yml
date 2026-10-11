@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: rpt_seller_health_scorecard
+    description: >
+      Executive and operational scorecard view for Supply Operations, joining monthly partner
+      performance metrics with seller dimensional attributes (tenure, location, geographic clustering).
+    columns:
+      - name: seller_monthly_key
+        description: "Surrogate primary key: MD5 hash of (seller_id, month)."
+        tests:
+          - unique
+          - not_null
+      - name: seller_id
+        description: "Natural key: unique seller identifier."
+        tests:
+          - not_null
+      - name: month
+        description: "First day of the reporting calendar month."
+        tests:
+          - not_null
+      - name: seller_lifecycle_status
+        description: "Current partner lifecycle classification (new, active, at_risk, churned, dormant, reactivated)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['new', 'active', 'at_risk', 'churned', 'dormant', 'reactivated']
+      - name: health_tier
+        description: "Rolling 3-month executive partner health status (Green, Amber, Red, insufficient_volume)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['insufficient_volume', 'Green', 'Amber', 'Red']
+
+  - name: rpt_executive_kpis_monthly
+    description: >
+      Macro platform-level reporting view aggregating marketplace performance metrics,
+      cohort retention transitions, aggregate fulfillment SLA, and macro Order Defect Rate (ODR).
+    columns:
+      - name: month
+        description: "First day of the reporting calendar month (primary grain)."
+        tests:
+          - unique
+          - not_null
+      - name: total_gmv
+        description: "Realized platform gross merchandise value in month (excluding canceled/unavailable orders)."
+        tests:
+          - not_null
+      - name: active_sellers_count
+        description: "Number of sellers with at least one active order in the month."
+        tests:
+          - not_null
+      - name: churned_sellers_count
+        description: "Number of sellers experiencing their 3rd consecutive inactive month."
+        tests:
+          - not_null

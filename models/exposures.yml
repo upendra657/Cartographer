@@ -1,0 +1,18 @@
+version: 2
+
+exposures:
+  - name: supply_ops_seller_health_scorecard
+    label: Supply Operations Seller-Health Scorecard
+    type: dashboard
+    maturity: high
+    description: >
+      Executive and operational scorecard utilized by Supply Operations / Partner Success
+      teams to evaluate seller performance, fulfillment SLA compliance, Order Defect Rate (ODR),
+      and proactive churn-risk status for merchant coaching, escalation, and retention interventions.
+    owner:
+      name: Supply Operations & Analytics Engineering
+      email: supply-ops-analytics@cartographer.internal
+    depends_on:
+      - ref('fct_seller_monthly_performance')
+      - ref('fct_seller_orders')
+      - ref('dim_sellers')

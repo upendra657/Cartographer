@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: int_reviews_rolled_up_to_orders
+    description: "Rollup of order reviews to order_id grain to eliminate 1:N join fan-out."
+    columns:
+      - name: order_id
+        description: "Primary key: unique identifier for an order with reviews."
+        tests:
+          - unique
+          - not_null
+
+  - name: int_order_items_sellers_joined
+    description: "Line-item level grain joining orders, sellers, and products without 1:N fan-out."
+    columns:
+      - name: order_id
+        description: "Composite key component: parent order identifier."
+        tests:
+          - not_null
+      - name: order_item_id
+        description: "Composite key component: order item sequence."
+        tests:
+          - not_null
+
+  - name: int_seller_orders_aggregated
+    description: "Fulfillment and performance grain aggregated to (seller_id, order_id)."
+    columns:
+      - name: seller_id
+        description: "Composite key component: seller identifier."
+        tests:
+          - not_null
+      - name: order_id
+        description: "Composite key component: order identifier."
+        tests:
+          - not_null
+
+  - name: int_seller_month_spine
+    description: "Dense calendar spine representing all months from each seller's first active month through 2018-08."
+    columns:
+      - name: seller_id
+        description: "Composite key component: seller identifier."
+        tests:
+          - not_null
+      - name: month
+        description: "Composite key component: first day of calendar month."
+        tests:
+          - not_null

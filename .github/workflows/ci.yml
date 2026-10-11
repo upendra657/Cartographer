@@ -1,0 +1,54 @@
+name: Cartographer Analytics CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'models/**'
+      - 'tests/**'
+      - 'dbt_project.yml'
+      - 'requirements.txt'
+      - '.sqlfluff'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  quality_gates:
+    name: Lint & Validation Pipeline
+    runs-on: ubuntu-latest
+
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      SNOWFLAKE_TRANSFORMER_ROLE: "TRANSFORMER"
+      SNOWFLAKE_WAREHOUSE: "CARTOGRAPHER_WH"
+      SNOWFLAKE_DATABASE: "CARTOGRAPHER_DB"
+      DBT_PROFILES_DIR: "."
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run SQLFluff Linting
+        run: |
+          sqlfluff lint models/
+
+      - name: Compile dbt Project (Syntax & References)
+        run: |
+          dbt compile
+
+      - name: Execute Marts & Unit Tests
+        run: |
+          dbt test --select "path:models/marts path:tests/unit"
