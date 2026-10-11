@@ -13,7 +13,7 @@
    - [1.4 The 60-Second Elevator Pitch](#14-the-60-second-elevator-pitch)
 2. [The Live Interactive Demo Walkthrough (Screen-by-Screen Guide)](#2-the-live-interactive-demo-walkthrough-screen-by-screen-guide)
    - [2.1 Prerequisites & Local Bootstrap](#21-prerequisites--local-bootstrap)
-   - [2.2 Screen 1: The Executive BI Dashboard (Streamlit App on `localhost:8501`)](#22-screen-1-the-executive-bi-dashboard-streamlit-app-on-localhost8501)
+   - [2.2 Screen 1: The Executive BI Dashboard (Live App / Local 8501)](#22-screen-1-the-executive-bi-dashboard-live-cartographer-marketplacestreamlitapp--local-localhost8501)
      - [Tab 1: Marketplace Macro Health](#tab-1-marketplace-macro-health)
      - [Tab 2: Seller Health Scorecard](#tab-2-seller-health-scorecard)
      - [Tab 3: Churn & Lifecycle Distribution](#tab-3-churn--lifecycle-distribution)
@@ -139,7 +139,7 @@ python scripts/audit_cost_governance.py
 
 ---
 
-### 2.2 Screen 1: The Executive BI Dashboard (Streamlit App on `localhost:8501`)
+### 2.2 Screen 1: The Executive BI Dashboard (Live: [cartographer-marketplace.streamlit.app](https://cartographer-marketplace.streamlit.app/) | Local: `localhost:8501`)
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────────────┐

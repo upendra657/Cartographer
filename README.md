@@ -1,13 +1,16 @@
 # Cartographer: Marketplace Supply Intelligence & Churn Analytics Engine
 
 [![CI](https://github.com/upendra657/Cartographer/actions/workflows/ci.yml/badge.svg)](https://github.com/upendra657/Cartographer/actions/workflows/ci.yml)
+[![Live App](https://img.shields.io/badge/Live_App-Streamlit_Cloud-FF4B4B.svg?style=flat&logo=streamlit&logoColor=white)](https://cartographer-marketplace.streamlit.app/)
 [![dbt-core](https://img.shields.io/badge/dbt--core-1.7.14-orange.svg)](https://docs.getdbt.com/)
 [![Snowflake](https://img.shields.io/badge/Snowflake-Enterprise%20Medallion-blue.svg)](https://www.snowflake.com/)
 [![PySpark](https://img.shields.io/badge/PySpark-3.5.1%20(Java%2017)-red.svg)](https://spark.apache.org/)
 [![SQLFluff](https://img.shields.io/badge/SQLFluff-Snowflake%20Dialect-brightgreen.svg)](https://sqlfluff.com/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.65.0-FF4B4B.svg)](https://streamlit.io/)
 [![Tests](https://img.shields.io/badge/Tests-76%2F76%20Passing%20(100%25)-success.svg)](tests/)
 [![FinOps](https://img.shields.io/badge/FinOps-0.75%20Credits%20(%242.27)-blueviolet.svg)](scripts/audit_cost_governance.py)
+
+> 🚀 **Live Interactive Application**: **[https://cartographer-marketplace.streamlit.app/](https://cartographer-marketplace.streamlit.app/)**  
+> *Experience the live executive intelligence platform running under role `REPORTER` with sub-second queries, interactive cohort retention matrices, and 2D merchant risk quadrants.*
 
 > **Created by [Upendra Sharma](https://github.com/upendra657)**  
 > *A production-grade marketplace supply analytics warehouse engineered to monitor partner merchant health, fulfillment SLA compliance, and supplier churn across 1.55 million transactions. Built to demonstrate enterprise data engineering and analytics mastery at scale: featuring point-in-time temporal replay, deterministic unit testing, multi-tier RBAC isolation, automated FinOps cost controls, and sub-second BI consumption.*
@@ -27,7 +30,7 @@
 | **Automated Data Quality** | **`76 / 76 PASS`** | 18 staging, 8 intermediate, 32 core marts, 15 reporting, 3 singular reconciliation tests. |
 | **Continuous Integration** | **`48 / 48 PASS (13.17s)`** | GitHub Actions fail-fast PR quality gate (SQLFluff $\to$ Compilation $\to$ Targeted Marts). |
 | **FinOps Cost Discipline** | **`0.7568`** credits (**$2.27**) | **7.57% of 10.0 monthly quota** utilized across the entire project development lifecycle. |
-| **BI Query Performance** | **`< 350 ms`** | Sub-second latency under role `REPORTER` using Apache Arrow in-memory streaming. |
+| **BI Query Performance** | **`< 350 ms`** | Sub-second latency under role `REPORTER`. **[Launch Live App ↗](https://cartographer-marketplace.streamlit.app/)** |
 
 ---
 
@@ -320,6 +323,9 @@ Pull requests against `main` trigger a 3-stage GitHub Actions CI pipeline ([`.gi
 ---
 
 ## 9. Interactive BI Portal: Streamlit Application
+
+> 🌐 **Public Live Demo**: **[https://cartographer-marketplace.streamlit.app/](https://cartographer-marketplace.streamlit.app/)**  
+> Direct cloud access for hiring managers, recruiters, and engineers. Zero local setup or credentials required.
 
 The presentation layer is powered by an interactive Streamlit application ([`app/dashboard.py`](app/dashboard.py)) running under role `REPORTER`. Designed for rapid executive exploration, it features five comprehensive analytics modules with dual-mode execution (Live Snowflake connection with seamless failover to certified in-memory cache):
 
