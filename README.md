@@ -321,28 +321,31 @@ Pull requests against `main` trigger a 3-stage GitHub Actions CI pipeline ([`.gi
 
 ## 9. Interactive BI Portal: Streamlit Application
 
-The reporting presentation layer is powered by an interactive Streamlit application ([`app/dashboard.py`](app/dashboard.py)) running under role `REPORTER`:
+The presentation layer is powered by an interactive Streamlit application ([`app/dashboard.py`](app/dashboard.py)) running under role `REPORTER`. Designed for rapid executive exploration, it features five comprehensive analytics modules with dual-mode execution (Live Snowflake connection with seamless failover to certified in-memory cache):
 
 ```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ CARTOGRAPHER MARKETPLACE INTELLIGENCE                              [Role: REPORTER]    │
-│ Connected to: CARTOGRAPHER_DB.MARTS | Warehouse: CARTOGRAPHER_WH (X-Small)             │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│  [ Tab 1: Marketplace Macro Health ]   [ Tab 2: Seller Scorecard ]   [ Tab 3: Churn ]  │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│  TOTAL GMV             TOTAL ORDERS            ACTIVE SELLERS          PLATFORM ODR    │
-│  R$ 13.59M             99,441                  3,095                   11.8%           │
-│  ▲ +14.2% MoM          ▲ +8.9% MoM             ▲ +5.1% MoM             ▼ -1.2% MoM     │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│  MONTHLY GMV & CHURN TRENDLINE (2016-09 to 2018-08)                                    │
-│  [██████████████████████████████████████████████████████████████] GMV: R$ 1.0M+/mo     │
-│  [-------------------------.....................................] Churn: ~28.4%        │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ CARTOGRAPHER MARKETPLACE INTELLIGENCE                                                [Role: REPORTER]  │
+│ Connected to: CARTOGRAPHER_DB.MARTS | Warehouse: CARTOGRAPHER_WH (X-Small)                             │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ [ 1. Macro Overview ] [ 2. Retention & Churn ] [ 3. Health & Risk ] [ 4. 360° Drilldown ] [ 5. Arch ] │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  TOTAL GMV             TOTAL ORDERS            ACTIVE SELLERS          PLATFORM ODR                    │
+│  R$ 13.59M             99,441                  3,095                   11.8%                           │
+│  ▲ +14.2% MoM          ▲ +8.9% MoM             ▲ +5.1% MoM             ▼ -1.2% MoM                     │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  MONTHLY GMV & CHURN TRENDLINE (2016-09 to 2018-08)                                                    │
+│  [██████████████████████████████████████████████████████████████] GMV: R$ 1.0M+/mo                     │
+│  [-------------------------.....................................] Churn: ~28.4%                        │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Tab 1: Marketplace Macro Health**: Visibility into platform GMV growth, order volumes, active seller counts, and monthly churn stabilization.
-- **Tab 2: Seller Health Scorecard**: Volume-gated scorecards filtering out small-sample noise (`insufficient_volume` for $N < 5$) while flagging chronic high-volume defect offenders (`Red`).
-- **Tab 3: Churn & Lifecycle Distribution**: 100% stacked area visualization tracking merchant cohort migration across `new`, `active`, `at_risk`, `churned`, `dormant`, and `reactivated` states.
+- **Tab 1: Platform Macro Overview**: C-level visibility into monthly GMV growth, order volumes, active seller expansion, and fleet SLA compliance vs. 90% floor / 98% target benchmarks, complete with dynamic executive commentary.
+- **Tab 2: Retention & Churn Dynamics**: 6-stage finite state machine visualizer, stacked cohort evolution bars, consecutive inactive months distribution, and right-censoring guardrails.
+- **Tab 3: Partner Health & Risk Matrix**: Volume-gated health scorecards ($N \ge 20$), 2D Volume vs. Defect Rate (ODR) scatter quadrant, and Brazilian geographic supply density maps across top states (SP, RJ, MG, PR, SC).
+- **Tab 4: 360° Partner Drilldown**: Deep dive into individual merchant performance across 3,095 partners: tenure, location, first/last sale dates, longitudinal revenue & defect timelines, and full historical audit ledgers.
+- **Tab 5: Data Architecture & Governance**: Real-time Kimball Tri-Fact model inspector (`112.6K` items / `100.0K` orders / `33.5K` monthly snapshots), RBAC role isolation verifier, and FinOps warehouse metering report (0.75 credits consumed).
+
 
 ---
 

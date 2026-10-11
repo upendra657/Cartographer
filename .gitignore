@@ -8,6 +8,7 @@ data/
 *.parquet
 *.csv
 !seeds/*.csv
+!app/cache/*.parquet
 
 # Secrets, Credentials & Local Config
 .env
